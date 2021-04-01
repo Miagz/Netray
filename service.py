@@ -137,4 +137,5 @@ class cmd(object):
                 conn("",args.p,False).conn()
             else:
                 print("Please enter the port")
-cmd()
+if __name__=="__main__":
+    cmd()
