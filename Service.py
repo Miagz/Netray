@@ -19,7 +19,11 @@ class service(object):
         else: #正向连接
             host_port=(self.Host,self.Port)
             self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)#SOCK_STREAM
-            self.sock.bind(host_port)
+            try:
+                self.sock.bind(host_port)
+            except:
+                print("The port is occupied or the port is greater than 65535")
+                sys.exit()
             self.sock.listen(5)
     def conn(self):
         stop = False
@@ -117,3 +121,5 @@ class service(object):
             except:pass
             value.write(data)
         value.close()
+    def upload(self,sockets):
+        pass

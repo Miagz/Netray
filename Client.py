@@ -12,7 +12,11 @@ class client(object):
         if self.reverse:
             self.host_port=(self.Host,self.Port)
             self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            self.sock.bind(self.host_port)
+            try:
+                self.sock.bind(self.host_port)
+            except:
+                print("The port is occupied or the port is greater than 65535")
+                sys.exit()
             self.sock.listen(5)
         else:
             self.host_port=(self.Host,self.Port)
@@ -22,8 +26,9 @@ class client(object):
                 print("connection succeeded")
 
             except Exception as e :
-                print('connect error: {}'.format(e))
+                print('Netray: {}'.format(e))
                 sys.exit()
+
     def conn(self):
         status=False
         while not status:
@@ -76,6 +81,13 @@ class client(object):
                     value = "ignore"
         return value
 
+    def progressbar(self,max_output_size,total_size):
+        percent='{:.2%}'.format(self.sent/total_size)
+        test = "%sKB|%sKB"%(self.sent//1024,total_size//1024)
+        sys.stdout.write('\r') 
+        sys.stdout.write('%s[%-50s] %s'%(percent,'#'*int(math.floor(self.sent*50/total_size)),test))
+        sys.stdout.flush()   
+
     def upload(self,conn,file_path,service_file_path):
         max_output_size = 65536
         info_dict={
@@ -101,12 +113,8 @@ class client(object):
             conn.send(buf)
         print("\nTransfer complete ")
         file.close()
+    def download(self,conn,service_file_path,file_path):
+        pass
 
-    def progressbar(self,max_output_size,total_size):
-        percent='{:.2%}'.format(self.sent/total_size)
-        test = "%sKB|%sKB"%(self.sent//1024,total_size//1024)
-        sys.stdout.write('\r') 
-        sys.stdout.write('%s[%-50s] %s'%(percent,'#'*int(math.floor(self.sent*50/total_size)),test))
-        sys.stdout.flush()   
 
 

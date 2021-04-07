@@ -38,19 +38,33 @@ class  netray(object):
 if __name__ == "__main__":
     # 判断ip是否规范
     pattern = re.compile(r'^(\d{1}|[1-9]{1}\d{1}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1}|[1-9]{1}\d{1}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1}|[1-9]{1}\d{1}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1}|[1-9]{1}\d{1}|1\d\d|2[0-4]\d|25[0-5])$')
-    hostname,port = sys.argv[1],sys.argv[2]
-    try:
-        int(sys.argv[1])
-        hostname = ""
-        port = sys.argv[1]
-        sys.argv = sys.argv[1:] #获取到port之后清除终端上的port
-    except:
-        sys.argv = sys.argv[2:]  #获取到hostname和port之后清除终端上的hostname和port
-    if hostname == "":pass
-    elif not pattern.search(hostname): #判断ip是否正确
-        print("[ERROR] Please enter the correct ip")
-        sys.exit()
-    if int(port)>65535:
-        print("[ERROR] port error! Please enter the correct port")
-        sys.exit()
-    netray(hostname,int(port))
+    if len(sys.argv)>2:
+        hostname,port = sys.argv[1],sys.argv[2]
+        try:
+            port = int(sys.argv[1])
+            hostname = ""
+            sys.argv = sys.argv[1:] #获取到port之后清除终端上的port
+        except:
+            try:
+                port = int(sys.argv[2])       
+            except:
+                print('Netray: Port error, please check the port ')
+                sys.exit()
+            sys.argv = sys.argv[2:]  #获取到hostname和port之后清除终端上的hostname和port
+
+        if hostname != "":
+            if not pattern.search(hostname): #判断ip是否正确
+                print("Netray: Please enter the correct ip")
+                sys.exit()
+
+    elif len(sys.argv)==2:
+        if sys.argv[1] == '-h' or sys.argv[1] == '--help':
+            hostname,port="",0
+        else:
+            print("Netray: Syntax error, please check the help option ")
+            sys.exit()
+    else:
+        sys.argv.append('--help')
+        hostname,port="",0
+
+    netray(hostname,int(port))  
