@@ -1,7 +1,6 @@
 #encoding:utf-8
 import socket
 import os,sys
-import platform
 import subprocess
 import json
 import struct
@@ -81,12 +80,10 @@ class service(object):
 
     def habit(self,value):
         command = value.split(' ')
-        if platform.system()=='Windows':
-            if command[0] == 'ls':
-                value = 'dir'#只是喜欢ls
-                value = self.command(value)
-                return value 
-        if command[0] == 'cd':
+        if command[0] == 'ls':
+            value = 'dir'#只是喜欢ls
+            value = self.command(value)
+        elif command[0] == 'cd':
             data = [x for x in command if x != '']
             if len(data)>1:
                 try:os.chdir(data[1])
