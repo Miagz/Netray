@@ -80,30 +80,31 @@ class service(object):
 
 
     def habit(self,value):
+        command = value.split(' ')
         if platform.system()=='Windows':
-            command = value.split(' ')
             if command[0] == 'ls':
                 value = 'dir'#只是喜欢ls
                 value = self.command(value)
-            elif command[0] == 'cd':
-                data = [x for x in command if x != '']
-                if len(data)>1:
-                    try:os.chdir(data[1])
-                    except Exception as e:return "{}".format(e)
-                else:os.chdir(os.environ['HOME'])
-                value = " "
-            elif command[0] == 'upload':
-                self.donwload(self.socket)
-                value = " "
-            elif command[0] == 'ignore':value=" "   
+                return value 
+        if command[0] == 'cd':
+            data = [x for x in command if x != '']
+            if len(data)>1:
+                try:os.chdir(data[1])
+                except Exception as e:return "{}".format(e)
+            else:os.chdir(os.environ['HOME'])
+            value = " "
+        elif command[0] == 'upload':
+            self.donwload(self.socket)
+            value = " "
+        elif command[0] == 'ignore':value=" "   
 
-            elif command[0] == 'help':
-                value = """
-                quit_service: Exit remote sessions and local sessions
-                quit Or exit: Exit the current session 
-                upload: Upload files from the console to the remote session 
-                """
-            else:value = self.command(value)                
+        elif command[0] == 'help':
+            value = """
+            quit_service: Exit remote sessions and local sessions
+            quit Or exit: Exit the current session 
+            upload: Upload files from the console to the remote session 
+            """
+        else:value = self.command(value)                
         return value
 
 
