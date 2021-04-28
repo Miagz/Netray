@@ -16,15 +16,15 @@ class  netray(object):
         parser.add_argument('-c',action="store_true",help='Client,Control')
         args=parser.parse_args()
         if not args.s and not args.c:
-            print("[ERROR] Please select Control[-c] or Passive control[-s] ")
+            print("Netray: Please select Control[-c] or Passive control[-s] ")
             sys.exit()
         if args.s and args.c:
-            print("[ERROR] [-s] and [-c] cannot exist at the same time")
+            print("Netray: [-s] and [-c] cannot exist at the same time")
             sys.exit()
         if len(hostname)>1 and args.s and not args.r:
-            print("[WARNING] No need to enter the host name ")
+            print("Netray: No need to enter the host name ")
         elif len(hostname)>1 and args.c and  args.r:
-            print("[WARNING] No need to enter the host name ")
+            print("Netray: No need to enter the host name ")
         if args.s:
             if args.r:service(hostname,port,True).conn()
             else:service(hostname,port,False).conn()
@@ -67,4 +67,4 @@ if __name__ == "__main__":
         sys.argv.append('--help')
         hostname,port="",0
 
-    netray(hostname,int(port))  
+    netray(hostname,int(port))
