@@ -11,8 +11,8 @@ class server(object):
     def __init__(self,host_port):
         self.host_port = host_port
     def hup_handle(self,signum,frame):
-        sock.send("\n")
-        sock.close()
+        self.sock.send("\n")
+        self.sock.close()
         raise SystemExit
     def main(self):
         self.m,self.s = pty.openpty()
@@ -31,40 +31,33 @@ class server(object):
             #"子进程创建成功, PID为:"+pid
             os.close(self.s)
             signal.signal(signal.SIGINT,self.hup_handle) #处理键盘信号
-
             try:
-                sock = socket(AF_INET, SOCK_STREAM)
-                sock.setsockopt(SOL_SOCKET,SO_REUSEADDR ,1)
-                sock.bind(self.host_port)
-                sock.listen(5)
-                conn,addr = sock.accept()
+                self.sock = socket(AF_INET, SOCK_STREAM)
+                self.sock.setsockopt(SOL_SOCKET,SO_REUSEADDR ,1)
+                self.sock.bind(self.host_port)
+                self.sock.listen(5)
+                conn,addr = self.sock.accept()
                 conn.settimeout(3)
                 fds = [self.m,conn]
                 mode = tty.tcgetattr(0)
                 while True:
-                    # if not conn.connect_ex(addr):raise Exception
                     r,w,e = select(fds,[],[])
                     if self.m in r:
                         data = os.read(self.m,1024)
-                        if data:
-                            conn.send(data)
-                        else:
-                            fds.remove(self.m)
+                        if data:conn.send(data)
+                        else:fds.remove(self.m)
                     if conn in r:
                         data = conn.recv(1024)
                         if not data:
                             fds.remove(conn)
                             conn.close()
-                            sock.close()
-                        if data:
-                            os.write(self.m,data)
+                            self.sock.close()
+                        if data:os.write(self.m,data)
             except Exception as e:
-                print(e)
                 conn.close()
-                sock.close()
-            finally:
-                os.close(self.m)
-
+                self.sock.close()
+            finally:os.close(self.m)
+#客户端            
 class client(object):
     def __init__(self,host_port):
         self.host_port = host_port 
