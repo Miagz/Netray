@@ -1,6 +1,5 @@
 import socket
 import os,sys
-import platform
 import struct,json,math
 
 class client(object):
@@ -41,9 +40,10 @@ class client(object):
                 info=sockets.recv(self.bufsize).decode() # 接收返回的信息
                 value = self.habit(input(info),sockets)      
                 try:
-                    sockets.send(value.encode())
-                    data=sockets.recv(1000000) # 接收返回的数据
-                    print(data.decode())
+                    if value:
+                        sockets.send(value.encode())
+                        data=sockets.recv(1000000) # 接收返回的数据
+                        print(data.decode())
                 except:
                     print("%s Disconnected"%(self.Host))
                     if self.reverse:
@@ -55,30 +55,39 @@ class client(object):
 
     def habit(self,value,sockets):
         command = value.split(' ')
-        if platform.system()=='Windows':
-            if not command[0].strip():
-                value = "ignore"
-            elif command[0] =="quit" or command[0] =="exit":
-                sys.exit()
-            elif command[0]=="quit_service":
-                sockets.send(command[0].encode())
-                sys.exit()
-            elif command[0] == 'upload':
-                if len(command)>1:
-                    if len(command)>2:
-                        if os.path.exists(command[1]):
-                            sockets.send(value.encode()) # 向被控端发送upload命令
-                            self.upload(sockets,command[1],command[2])
-                            value = " "
-                        else:
-                            print(" {} file does not exist".format(command[1]))
-                            value = "ignore"
+        if not command[0].strip():
+            value = "ignore"
+        elif command[0] =="quit" or command[0] =="exit":
+            sys.exit()
+        elif command[0]=="quit_service":
+            sockets.send(command[0].encode())
+            sys.exit()
+        elif command[0] == 'upload':
+            if len(command)>1:
+                if len(command)>2:
+                    if os.path.exists(command[1]):
+                        sockets.send(value.encode()) # 向被控端发送upload命令
+                        self.upload(sockets,command[1],command[2])
+                        return
                     else:
-                        print("The remote session storage path is not selected ")
+                        print(" {} file does not exist".format(command[1]))
                         value = "ignore"
                 else:
-                    print("Please select file path ")
+                    print("The remote session storage path is not selected ")
                     value = "ignore"
+            else:
+                print("Please select file path ")
+                value = "ignore"
+        elif command[0] == 'download':
+            if len(command)>1:
+                if len(command)>2:
+                    sockets.send(value.encode())
+                    self.download(sockets,command[1],command[2])
+                    return
+            else:
+                print("Please select file path ")
+                value = "ignore"
+
         return value
 
     def progressbar(self,max_output_size,total_size):
@@ -103,7 +112,6 @@ class client(object):
         file = open(file_path, "rb")
         self.sent=0
         while 1:
-
             buf = file.read(max_output_size)
             self.progressbar(len(buf),total_size)
             self.sent += len(buf)
@@ -114,7 +122,25 @@ class client(object):
         print("\nTransfer complete ")
         file.close()
     def download(self,conn,service_file_path,file_path):
-        pass
+        max_output_size = 65536
+        info_dict={
+        'filename':service_file_path,
+        "max_output_size":max_output_size
+        }
+        header_bytes = json.dumps(info_dict).encode()
+        header_len = struct.pack('i',len(header_bytes))
+        conn.send(header_len)
+        conn.send(header_bytes)#报文头
 
 
-
+        value = open(file_path,'wb')
+        while 1:
+            data =  conn.recv(max_output_size)
+            strs=''
+            print(data.index(b'\xef'))
+            try:
+                if "hello_word_file_is_end" in data.decode():
+                    break
+            except:pass
+            value.write(data)
+        value.close()
